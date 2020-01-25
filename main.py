@@ -211,12 +211,15 @@ def get_capture_coordinates(move_coordinate, piece_coordinate):
     )
 
 
-def has_captured_piece(board, move_coordinate, piece_coordinate):
+def has_captured_piece(move_coordinate, piece_coordinate):
     if abs(piece_coordinate[0] - move_coordinate[0]) == 1:
         return False
+    return True
+
+
+def capture_piece(board, piece_coordinate, move_coordinate):
     capture = get_capture_coordinates(move_coordinate, piece_coordinate)
     board[capture] = BLACK_SQUARE
-    return True
 
 
 def get_board_square(x, y):
@@ -224,10 +227,22 @@ def get_board_square(x, y):
 
 
 def choose_follow_up_move(capturing_moves):
-    if len(capturing_moves):
-        # Todo: handle forced capturing moves
-        #   Allow choice if multiple pieces can be captured
-        pass
+    if not len(capturing_moves):
+        return None
+
+    # Todo: handle forced capturing moves
+    #   Allow choice if multiple pieces can be captured
+    allowed_follow_ups = [coordinatesToString(*move) for move in capturing_moves]
+    print(", ".join(allowed_follow_ups))
+    user_input = None
+    while user_input not in allowed_follow_ups:
+        user_input = input("Select a follow up capture")
+
+    return capturing_moves[allowed_follow_ups.index(user_input)]
+
+
+def coordinatesToString(x, y):
+    return str(x + 1) + ALPHA[y]
 
 
 def main():
@@ -239,11 +254,16 @@ def main():
         piece_coordinate = select_piece(board, current_player)
         move_coordinate = enter_move(board, current_player, piece_coordinate)
         make_move(board, piece_coordinate, move_coordinate)
-        possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
-        capturing_moves = get_capturing_moves(board, current_player, move_coordinate, possible_move_coordinates)
-        choose_follow_up_move(capturing_moves)
-        if not has_captured_piece(board, move_coordinate, piece_coordinate) or not len(capturing_moves):
-            current_player = switch_players(current_player)
+        if (has_captured_piece(move_coordinate, piece_coordinate)):
+            capture_piece(board, piece_coordinate, move_coordinate)
+            possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
+            capturing_moves = get_capturing_moves(board, current_player, move_coordinate, possible_move_coordinates)
+            follow_up_coordinate = choose_follow_up_move(capturing_moves)
+            if follow_up_coordinate is not None:
+                make_move(board, move_coordinate, follow_up_coordinate)
+                capture_piece(board, move_coordinate, follow_up_coordinate)
+
+        current_player = switch_players(current_player)
 
 
 if __name__ == '__main__':
