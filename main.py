@@ -170,15 +170,19 @@ def main():
         piece_coordinate = select_piece(board, current_player)
         move_coordinate = enter_move(board, current_player, piece_coordinate)
         make_move(board, piece_coordinate, move_coordinate)
-        if abs(piece_coordinate[0] - move_coordinate[0]) > 1:
-            capture = (
-                (piece_coordinate[0] + move_coordinate[0]) / 2,
-                (piece_coordinate[1] + move_coordinate[1]) / 2,
-            )
-            print(piece_coordinate, capture, move_coordinate)
-            board[capture] = BLACK_SQUARE
-        else:
+        if not has_captured_piece(board, move_coordinate, piece_coordinate):
             current_player = switch_players(current_player)
+
+
+def has_captured_piece(board, move_coordinate, piece_coordinate):
+    if abs(piece_coordinate[0] - move_coordinate[0]) == 1:
+        return False
+    capture = (
+        (piece_coordinate[0] + move_coordinate[0]) / 2,
+        (piece_coordinate[1] + move_coordinate[1]) / 2,
+    )
+    board[capture] = BLACK_SQUARE
+    return True
 
 
 def get_board_square(x, y):
