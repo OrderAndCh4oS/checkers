@@ -223,6 +223,13 @@ def get_board_square(x, y):
     return BLACK_SQUARE if is_black_square(x, y) else WHITE_SQUARE
 
 
+def choose_follow_up_move(capturing_moves):
+    if len(capturing_moves):
+        # Todo: handle forced capturing moves
+        #   Allow choice if multiple pieces can be captured
+        pass
+
+
 def main():
     current_player = PLAYER_ONE
     board = {(x, y): get_board_square(x, y) for x in range(8) for y in range(8)}
@@ -234,7 +241,7 @@ def main():
         make_move(board, piece_coordinate, move_coordinate)
         possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
         capturing_moves = get_capturing_moves(board, current_player, move_coordinate, possible_move_coordinates)
-        print("result: ", capturing_moves)
+        choose_follow_up_move(capturing_moves)
         if not has_captured_piece(board, move_coordinate, piece_coordinate) or not len(capturing_moves):
             current_player = switch_players(current_player)
 
