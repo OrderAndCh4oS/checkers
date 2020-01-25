@@ -65,7 +65,8 @@ def get_piece_moves(player, piece):
 
 
 def is_legal_move(board, player, piece_coordinate, move_coordinate):
-    return move_coordinate in allowed_piece_moves(board, player, piece_coordinate, board[piece_coordinate])
+    possible_piece_moves = get_piece_moves(player, board[piece_coordinate])
+    return move_coordinate in allowed_piece_moves(board, player, piece_coordinate, possible_piece_moves)
 
 
 def is_white_piece(board, coordinate):
@@ -109,14 +110,14 @@ def allowed_piece_moves(board, player, piece_coordinate, possible_move_coordinat
     return allowed_moves
 
 
-def get_capturing_move(board, player, piece_coordinate, possible_move_coordinates):
+def get_capturing_moves(board, player, piece_coordinate, possible_move_coordinates):
     x, y = piece_coordinate
     capturing_moves = []
     for move_coordinate in possible_move_coordinates:
         move = (x + move_coordinate[0] * 2, y + move_coordinate[1] * 2)
         if not is_in_board_bounds(*move) or board[move] != BLACK_SQUARE:
             continue
-        capture_coordinates = get_capture_coordinates(move_coordinate, piece_coordinate)
+        capture_coordinates = get_capture_coordinates(move, piece_coordinate)
         if player is PLAYER_ONE and can_capture_piece(
                 board,
                 capture_coordinates,
@@ -192,7 +193,7 @@ def switch_players(current_player):
 
 
 def can_capture_piece(board, capture_coordinates, opponents_pieces):
-    return board[capture_coordinates(move_coordinate, piece_coordinate)] in opponents_pieces
+    return board[capture_coordinates] in opponents_pieces
 
 
 def get_capture_coordinates(move_coordinate, piece_coordinate):
@@ -223,7 +224,10 @@ def main():
         piece_coordinate = select_piece(board, current_player)
         move_coordinate = enter_move(board, current_player, piece_coordinate)
         make_move(board, piece_coordinate, move_coordinate)
-        if not has_captured_piece(board, move_coordinate, piece_coordinate):
+        possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
+        print(get_capturing_moves(board, current_player, piece_coordinate, possible_move_coordinates))
+        capturing_moves = get_capturing_moves(board, current_player, piece_coordinate, possible_move_coordinates)
+        if not has_captured_piece(board, move_coordinate, piece_coordinate) or not len(capturing_moves):
             current_player = switch_players(current_player)
 
 
