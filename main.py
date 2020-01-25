@@ -115,20 +115,28 @@ def get_capturing_moves(board, player, piece_coordinate, possible_move_coordinat
     capturing_moves = []
     for move_coordinate in possible_move_coordinates:
         move = (x + move_coordinate[0] * 2, y + move_coordinate[1] * 2)
-        if not is_in_board_bounds(*move) or board[move] != BLACK_SQUARE:
+        print("m*2", move)
+        if not is_in_board_bounds(*move):
+            print("Not in bounds")
+            continue
+        if board[move] != BLACK_SQUARE:
+            print("Not black square")
             continue
         capture_coordinates = get_capture_coordinates(move, piece_coordinate)
+        print("cc", capture_coordinates)
         if player is PLAYER_ONE and can_capture_piece(
                 board,
                 capture_coordinates,
                 WHITE_PIECES
         ):
+            print('1')
             capturing_moves.append(move)
         elif player is PLAYER_TWO and can_capture_piece(
                 board,
                 capture_coordinates,
                 BLACK_PIECES
         ):
+            print('2')
             capturing_moves.append(move)
 
     return capturing_moves
@@ -225,8 +233,8 @@ def main():
         move_coordinate = enter_move(board, current_player, piece_coordinate)
         make_move(board, piece_coordinate, move_coordinate)
         possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
-        print(get_capturing_moves(board, current_player, piece_coordinate, possible_move_coordinates))
-        capturing_moves = get_capturing_moves(board, current_player, piece_coordinate, possible_move_coordinates)
+        capturing_moves = get_capturing_moves(board, current_player, move_coordinate, possible_move_coordinates)
+        print("result: ", capturing_moves)
         if not has_captured_piece(board, move_coordinate, piece_coordinate) or not len(capturing_moves):
             current_player = switch_players(current_player)
 
