@@ -254,6 +254,8 @@ def main():
         piece_coordinate = select_piece(board, current_player)
         move_coordinate = enter_move(board, current_player, piece_coordinate)
         make_move(board, piece_coordinate, move_coordinate)
+        # Todo: force player to take captures if available
+        #       Loop until all possible captures have been made
         if (has_captured_piece(move_coordinate, piece_coordinate)):
             capture_piece(board, piece_coordinate, move_coordinate)
             possible_move_coordinates = get_piece_moves(current_player, board[move_coordinate])
