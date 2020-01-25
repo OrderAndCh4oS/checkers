@@ -1,5 +1,4 @@
 import re
-import sys
 
 GAME_BOARD = """
     A B C D E F G H
@@ -20,10 +19,16 @@ ALPHA = ["A", "B", "C", "D", "E", "F", "G", "H"]
 PLAYER_ONE = "Player One"
 PLAYER_TWO = "Player Two"
 
+BLACK_SQUARE = "■"
+WHITE_SQUARE = "."
+
 BLACK = "x"
 WHITE = "o"
 BLACK_KINGED = "X"
 WHITE_KINGED = "O"
+
+WHITE_PIECES = (WHITE, WHITE_KINGED)
+BLACK_PIECES = (BLACK, BLACK_KINGED)
 
 WHITE_START_POSITIONS = [
     (0, 1), (0, 3), (0, 5), (0, 7),
@@ -50,16 +55,83 @@ def setup_board(board):
         board[position] = BLACK
 
 
-def find_available_moves(board, player):
-    pass
+def is_legal_move(board, player, piece_coordinate, move_coordinate):
+    if player is PLAYER_ONE:
+        return move_coordinate in allowed_piece_moves(board, player, piece_coordinate, ((-1, -1), (-1, 1)))
+    elif player is PLAYER_TWO:
+        return move_coordinate in allowed_piece_moves(board, player, piece_coordinate, ((1, 1), (1, -1)))
 
 
-def player_move_prompt(player):
+def is_white_piece(board, coordinate):
+    return board[coordinate] in WHITE_PIECES
+
+
+def is_black_piece(board, coordinate):
+    return board[coordinate] in BLACK_PIECES
+
+
+def is_in_board_bounds(x, y):
+    return 0 <= x <= 7 and 0 <= y <= 7
+
+
+def allowed_piece_moves(board, player, piece_coordinate, possible_move_coordinates):
+    x, y = piece_coordinate
+    allowed_moves = []
+    for move_coordinate in possible_move_coordinates:
+        move = (x + move_coordinate[0], y + move_coordinate[1])
+        if not is_in_board_bounds(*move):
+            continue
+        if player is PLAYER_ONE:
+            if is_white_piece(board, move):
+                move = (move[0] + move_coordinate[0], move[1] + move_coordinate[1])
+                if not is_in_board_bounds(*move) or not is_black_square(*move):
+                    continue
+            elif is_black_piece(board, move):
+                continue
+        elif player is PLAYER_TWO:
+            if is_black_piece(board, move):
+                move = (move[0] + move_coordinate[0], move[1] + move_coordinate[1])
+                if not is_in_board_bounds(*move) or not is_black_square(*move):
+                    continue
+                pass
+            elif is_white_piece(board, move):
+                continue
+        if board[move] == BLACK_SQUARE:
+            allowed_moves.append(move)
+            continue
+
+    return allowed_moves
+
+
+def make_move(board, piece_coordinate, move_coordinate):
+    board[move_coordinate], board[piece_coordinate] = board[piece_coordinate], board[move_coordinate]
+
+
+def is_current_player_piece(board, player, coordinate):
+    if player is PLAYER_ONE:
+        return board[coordinate] in BLACK_PIECES
+    elif player is PLAYER_TWO:
+        return board[coordinate] in WHITE_PIECES
+
+
+def select_piece(board, player):
     user_input = None
     while user_input is None \
             or not is_valid_coordinate(user_input) \
-            or not is_black_square(*get_move_coordinates(user_input)):
+            or not is_black_square(*get_move_coordinates(user_input)) \
+            or not is_current_player_piece(board, player, get_move_coordinates(user_input)):
+        user_input = input("{} select piece to move: ".format(player))
+
+    return get_move_coordinates(user_input)
+
+
+def enter_move(board, player, piece):
+    user_input = None
+    while user_input is None or \
+            not is_legal_move(board, player, piece, get_move_coordinates(user_input)):
         user_input = input("{} enter your move: ".format(player))
+
+    return get_move_coordinates(user_input)
 
 
 def clean_input(string):
@@ -75,7 +147,7 @@ def get_move_coordinates(move):
 
 
 def alpha_to_coordinate(char):
-    return ALPHA.index(char)
+    return ALPHA.index(char.upper())
 
 
 def is_black_square(x, y):
@@ -83,7 +155,10 @@ def is_black_square(x, y):
 
 
 def switch_players(current_player):
-    return PLAYER_ONE if current_player == PLAYER_TWO else PLAYER_TWO
+    if current_player == PLAYER_ONE:
+        return PLAYER_TWO
+    elif current_player == PLAYER_TWO:
+        return PLAYER_ONE
 
 
 def main():
@@ -92,12 +167,22 @@ def main():
     setup_board(board)
     while True:
         display_board(board)
-        player_move_prompt(current_player)
-        current_player = switch_players(current_player)
+        piece_coordinate = select_piece(board, current_player)
+        move_coordinate = enter_move(board, current_player, piece_coordinate)
+        make_move(board, piece_coordinate, move_coordinate)
+        if abs(piece_coordinate[0] - move_coordinate[0]) > 1:
+            capture = (
+                (piece_coordinate[0] + move_coordinate[0]) / 2,
+                (piece_coordinate[1] + move_coordinate[1]) / 2,
+            )
+            print(piece_coordinate, capture, move_coordinate)
+            board[capture] = BLACK_SQUARE
+        else:
+            current_player = switch_players(current_player)
 
 
 def get_board_square(x, y):
-    return "■" if is_black_square(x, y) else "□"
+    return BLACK_SQUARE if is_black_square(x, y) else WHITE_SQUARE
 
 
 if __name__ == '__main__':
