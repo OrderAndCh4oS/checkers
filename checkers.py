@@ -27,6 +27,10 @@ WHITE = "o"
 BLACK_KINGED = "X"
 WHITE_KINGED = "O"
 
+KINGED_MOVES = (-1, -1), (-1, 1), (1, 1), (1, -1)
+BLACK_MOVES = (-1, -1), (-1, 1)
+WHITE_MOVES = (1, 1), (1, -1)
+
 WHITE_PIECES = (WHITE, WHITE_KINGED)
 BLACK_PIECES = (BLACK, BLACK_KINGED)
 
@@ -57,16 +61,16 @@ def setup_board(board):
 
 def get_piece_moves(player, piece):
     if piece in (WHITE_KINGED, BLACK_KINGED):
-        return (-1, -1), (-1, 1), (1, 1), (1, -1)
+        return KINGED_MOVES
     elif player is PLAYER_ONE:
-        return (-1, -1), (-1, 1)
+        return BLACK_MOVES
     elif player is PLAYER_TWO:
-        return (1, 1), (1, -1)
+        return WHITE_MOVES
 
 
 def is_legal_move(board, player, piece_coordinate, move_coordinate):
     possible_piece_moves = get_piece_moves(player, board[piece_coordinate])
-    return move_coordinate in allowed_piece_moves(board, player, piece_coordinate, possible_piece_moves)
+    return move_coordinate in allowed_moves_for_piece(board, player, piece_coordinate, possible_piece_moves)
 
 
 def is_white_piece(board, coordinate):
@@ -81,7 +85,7 @@ def is_in_board_bounds(x, y):
     return 0 <= x <= 7 and 0 <= y <= 7
 
 
-def allowed_piece_moves(board, player, piece_coordinate, possible_move_coordinates):
+def allowed_moves_for_piece(board, player, piece_coordinate, possible_move_coordinates):
     x, y = piece_coordinate
     allowed_moves = []
     for move_coordinate in possible_move_coordinates:
@@ -110,7 +114,7 @@ def allowed_piece_moves(board, player, piece_coordinate, possible_move_coordinat
     return allowed_moves
 
 
-def get_capturing_moves(board, player, piece_coordinate, possible_move_coordinates):
+def get_capturing_moves_for_piece(board, player, piece_coordinate, possible_move_coordinates):
     x, y = piece_coordinate
     capturing_moves = []
     for move_coordinate in possible_move_coordinates:
@@ -233,7 +237,7 @@ def choose_follow_up_move(capturing_moves):
 
     # Todo: handle forced capturing moves
     #   Allow choice if multiple pieces can be captured
-    allowed_follow_ups = [coordinatesToString(*move) for move in capturing_moves]
+    allowed_follow_ups = [coordinates_to_string(*move) for move in capturing_moves]
     print(", ".join(allowed_follow_ups))
     user_input = None
     while user_input is None \
@@ -244,7 +248,7 @@ def choose_follow_up_move(capturing_moves):
     return capturing_moves[allowed_follow_ups.index(user_input)]
 
 
-def coordinatesToString(x, y):
+def coordinates_to_string(x, y):
     return str(x + 1) + ALPHA[y]
 
 
@@ -262,7 +266,7 @@ def main():
         while moved_to_coordinate is not None and has_captured_piece(moved_to_coordinate, piece_coordinate):
             capture_piece(board, piece_coordinate, moved_to_coordinate)
             possible_move_coordinates = get_piece_moves(current_player, board[moved_to_coordinate])
-            capturing_moves = get_capturing_moves(board, current_player, moved_to_coordinate, possible_move_coordinates)
+            capturing_moves = get_capturing_moves_for_piece(board, current_player, moved_to_coordinate, possible_move_coordinates)
             follow_up_coordinate = choose_follow_up_move(capturing_moves)
             if follow_up_coordinate is not None:
                 make_move(board, moved_to_coordinate, follow_up_coordinate)
