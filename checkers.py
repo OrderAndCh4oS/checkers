@@ -119,28 +119,22 @@ def get_capturing_moves_for_piece(board, player, piece_coordinate, possible_move
     capturing_moves = []
     for move_coordinate in possible_move_coordinates:
         move = (x + move_coordinate[0] * 2, y + move_coordinate[1] * 2)
-        print("m*2", move)
         if not is_in_board_bounds(*move):
-            print("Not in bounds")
             continue
         if board[move] != BLACK_SQUARE:
-            print("Not black square")
             continue
         capture_coordinates = get_capture_coordinates(move, piece_coordinate)
-        print("cc", capture_coordinates)
         if player is PLAYER_ONE and can_capture_piece(
                 board,
                 capture_coordinates,
                 WHITE_PIECES
         ):
-            print('1')
             capturing_moves.append(move)
         elif player is PLAYER_TWO and can_capture_piece(
                 board,
                 capture_coordinates,
                 BLACK_PIECES
         ):
-            print('2')
             capturing_moves.append(move)
 
     return capturing_moves
@@ -243,7 +237,7 @@ def choose_follow_up_move(capturing_moves):
     while user_input is None \
             or not is_valid_coordinate(user_input) \
             or user_input not in allowed_follow_ups:
-        user_input = clean_input(input("Select a follow up capture"))
+        user_input = clean_input(input("Select a follow up capture: "))
 
     return capturing_moves[allowed_follow_ups.index(user_input)]
 
@@ -280,6 +274,22 @@ def main():
             board[moved_to_coordinate] = BLACK_KINGED
         elif current_player is PLAYER_TWO and moved_to_coordinate[0] is 7:
             board[moved_to_coordinate] = WHITE_KINGED
+
+        white_piece_count = 0
+        black_piece_count = 0
+        for coordinate in board:
+            if board[coordinate] in BLACK_PIECES:
+                black_piece_count += 1
+            elif board[coordinate] in WHITE_PIECES:
+                white_piece_count += 1
+
+        if white_piece_count is 0:
+            print("Player one wins")
+            break
+
+        if black_piece_count is 0:
+            print("Player two wins")
+            break
 
         current_player = switch_players(current_player)
 
