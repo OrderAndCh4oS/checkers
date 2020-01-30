@@ -135,7 +135,7 @@ def allowed_moves_for_piece(board, player, piece_coordinate, possible_move_coord
 
 
 def get_capturing_moves_for_piece(
-    board, player, piece_coordinate, possible_move_coordinates
+        board, player, piece_coordinate, possible_move_coordinates
 ):
     x, y = piece_coordinate
     capturing_moves = []
@@ -147,11 +147,11 @@ def get_capturing_moves_for_piece(
             continue
         capture_coordinates = get_capture_coordinates(move, piece_coordinate)
         if player is PLAYER_ONE and can_capture_piece(
-            board, capture_coordinates, WHITE_PIECES
+                board, capture_coordinates, WHITE_PIECES
         ):
             capturing_moves.append(move)
         elif player is PLAYER_TWO and can_capture_piece(
-            board, capture_coordinates, BLACK_PIECES
+                board, capture_coordinates, BLACK_PIECES
         ):
             capturing_moves.append(move)
 
@@ -175,10 +175,10 @@ def is_current_player_piece(board, player, coordinate):
 def select_piece(board, player):
     user_input = None
     while (
-        user_input is None
-        or not is_valid_coordinate(user_input)
-        or not is_black_square(*get_move_coordinates(user_input))
-        or not is_current_player_piece(board, player, get_move_coordinates(user_input))
+            user_input is None
+            or not is_valid_coordinate(user_input)
+            or not is_black_square(*get_move_coordinates(user_input))
+            or not is_current_player_piece(board, player, get_move_coordinates(user_input))
     ):
         user_input = clean_input(input("{} select piece to move: ".format(player)))
 
@@ -188,9 +188,9 @@ def select_piece(board, player):
 def enter_move(board, player, piece):
     user_input = None
     while (
-        user_input is None
-        or not is_valid_coordinate(user_input)
-        or not is_legal_move(board, player, piece, get_move_coordinates(user_input))
+            user_input is None
+            or not is_valid_coordinate(user_input)
+            or not is_legal_move(board, player, piece, get_move_coordinates(user_input))
     ):
         user_input = clean_input(input("{} enter your move: ".format(player)))
 
@@ -260,13 +260,61 @@ def choose_follow_up_move(capturing_moves):
     print(", ".join(allowed_follow_ups))
     user_input = None
     while (
-        user_input is None
-        or not is_valid_coordinate(user_input)
-        or user_input not in allowed_follow_ups
+            user_input is None
+            or not is_valid_coordinate(user_input)
+            or user_input not in allowed_follow_ups
     ):
         user_input = clean_input(input("Select a follow up capture: "))
 
     return capturing_moves[allowed_follow_ups.index(user_input)]
+
+
+def count_pieces(board):
+    white_piece_count = 0
+    black_piece_count = 0
+    for coordinate in board:
+        if board[coordinate] in BLACK_PIECES:
+            black_piece_count += 1
+        elif board[coordinate] in WHITE_PIECES:
+            white_piece_count += 1
+    return black_piece_count, white_piece_count
+
+
+def make_kinged_piece(board, current_player, moved_to_coordinate, piece_coordinate):
+    if moved_to_coordinate is None:
+        moved_to_coordinate = piece_coordinate
+    if current_player is PLAYER_ONE and moved_to_coordinate[0] is 0:
+        board[moved_to_coordinate] = BLACK_KINGED
+    elif current_player is PLAYER_TWO and moved_to_coordinate[0] is 7:
+        board[moved_to_coordinate] = WHITE_KINGED
+
+
+def follow_up_player_move(board, current_player, moved_to_coordinate, piece_coordinate):
+    while moved_to_coordinate is not None and has_captured_piece(
+            moved_to_coordinate, piece_coordinate
+    ):
+        capture_piece(board, piece_coordinate, moved_to_coordinate)
+        possible_move_coordinates = get_piece_moves(
+            current_player, board[moved_to_coordinate]
+        )
+        capturing_moves = get_capturing_moves_for_piece(
+            board, current_player, moved_to_coordinate, possible_move_coordinates
+        )
+        follow_up_coordinate = choose_follow_up_move(capturing_moves)
+        if follow_up_coordinate is not None:
+            make_move(board, moved_to_coordinate, follow_up_coordinate)
+            capture_piece(board, moved_to_coordinate, follow_up_coordinate)
+        piece_coordinate = moved_to_coordinate
+        moved_to_coordinate = follow_up_coordinate
+    return moved_to_coordinate, piece_coordinate
+
+
+def initial_player_move(board, current_player):
+    display_board(board)
+    piece_coordinate = select_piece(board, current_player)
+    moved_to_coordinate = enter_move(board, current_player, piece_coordinate)
+    make_move(board, piece_coordinate, moved_to_coordinate)
+    return moved_to_coordinate, piece_coordinate
 
 
 def coordinates_to_string(x, y):
@@ -296,54 +344,6 @@ def main():
             break
 
         current_player = switch_players(current_player)
-
-
-def count_pieces(board):
-    white_piece_count = 0
-    black_piece_count = 0
-    for coordinate in board:
-        if board[coordinate] in BLACK_PIECES:
-            black_piece_count += 1
-        elif board[coordinate] in WHITE_PIECES:
-            white_piece_count += 1
-    return black_piece_count, white_piece_count
-
-
-def make_kinged_piece(board, current_player, moved_to_coordinate, piece_coordinate):
-    if moved_to_coordinate is None:
-        moved_to_coordinate = piece_coordinate
-    if current_player is PLAYER_ONE and moved_to_coordinate[0] is 0:
-        board[moved_to_coordinate] = BLACK_KINGED
-    elif current_player is PLAYER_TWO and moved_to_coordinate[0] is 7:
-        board[moved_to_coordinate] = WHITE_KINGED
-
-
-def follow_up_player_move(board, current_player, moved_to_coordinate, piece_coordinate):
-    while moved_to_coordinate is not None and has_captured_piece(
-        moved_to_coordinate, piece_coordinate
-    ):
-        capture_piece(board, piece_coordinate, moved_to_coordinate)
-        possible_move_coordinates = get_piece_moves(
-            current_player, board[moved_to_coordinate]
-        )
-        capturing_moves = get_capturing_moves_for_piece(
-            board, current_player, moved_to_coordinate, possible_move_coordinates
-        )
-        follow_up_coordinate = choose_follow_up_move(capturing_moves)
-        if follow_up_coordinate is not None:
-            make_move(board, moved_to_coordinate, follow_up_coordinate)
-            capture_piece(board, moved_to_coordinate, follow_up_coordinate)
-        piece_coordinate = moved_to_coordinate
-        moved_to_coordinate = follow_up_coordinate
-    return moved_to_coordinate, piece_coordinate
-
-
-def initial_player_move(board, current_player):
-    display_board(board)
-    piece_coordinate = select_piece(board, current_player)
-    moved_to_coordinate = enter_move(board, current_player, piece_coordinate)
-    make_move(board, piece_coordinate, moved_to_coordinate)
-    return moved_to_coordinate, piece_coordinate
 
 
 if __name__ == "__main__":
