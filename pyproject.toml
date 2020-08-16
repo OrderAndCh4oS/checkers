@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "play_checkers"
-version = "1.0.3"
+version = "1.0.4"
 description = "Python Checkers Game"
 authors = ["Sarcoma <sarcoma@live.co.uk>"]
 license = "MIT"
