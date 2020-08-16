@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import re
 
 GAME_BOARD = """
@@ -252,7 +255,7 @@ def coordinates_to_string(x, y):
     return str(x + 1) + ALPHA[y]
 
 
-def main():
+def play():
     current_player = PLAYER_ONE
     board = {(x, y): get_board_square(x, y) for x in range(8) for y in range(8)}
     setup_board(board)
@@ -285,4 +288,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    play()

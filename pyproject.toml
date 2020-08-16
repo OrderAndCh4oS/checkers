@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "play_checkers"
+version = "1.0.3"
+description = "Python Checkers Game"
+authors = ["Sarcoma <sarcoma@live.co.uk>"]
+license = "MIT"
+
+[tool.poetry.scripts]
+play_checkers = "play_checkers.__main__:main"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0a5"]
+build-backend = "poetry.core.masonry.api"
